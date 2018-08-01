@@ -1,0 +1,19 @@
+steps:
+- name: 'gcr.io/cloud-builders/go'
+  args: ['test', './internal/...']
+  id: 'go-test'
+  env: ['PROJECT_ROOT=github.com/vendasta/godaddy', 'ENVIRONMENT=test']
+- name: 'gcr.io/cloud-builders/go'
+  args: ['install', './server']
+  env: ['PROJECT_ROOT=github.com/vendasta/godaddy']
+  waitFor: ['mscli-test']
+  id: 'go-install'
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '--file=./mscli-Dockerfile', '--tag=gcr.io/$PROJECT_ID/godaddy:$BUILD_ID', '.']
+  waitFor: ['go-install']
+images: ['gcr.io/$PROJECT_ID/godaddy:$BUILD_ID']
+tags:
+- Godaddy
+timeout: 1200s
+options:
+  machineType: N1_HIGHCPU_8
